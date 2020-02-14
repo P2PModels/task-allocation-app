@@ -88,8 +88,6 @@ contract Template is TemplateBase {
 
         acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), root);
 
-        acl.createPermission(voting, app, app.INCREMENT_ROLE(), voting);
-        acl.createPermission(ANY_ENTITY, app, app.DECREMENT_ROLE(), root);
         acl.createPermission(ANY_ENTITY, app, app.ASSIGN_TASK_ROLE(), root);
 
         acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());

@@ -8,8 +8,6 @@ contract TasksApp is AragonApp {
     using SafeMath for uint256;
 
     /// Events
-    event Increment(address indexed entity, uint256 step);
-    event Decrement(address indexed entity, uint256 step);
     event TaskAssigned(bytes32 _languageGroup, string _userId, string _taskId);
 
     ///Types
@@ -42,8 +40,6 @@ contract TasksApp is AragonApp {
     // uint256 private taskIndexLength;
 
     /// ACL
-    bytes32 constant public INCREMENT_ROLE = keccak256("INCREMENT_ROLE");
-    bytes32 constant public DECREMENT_ROLE = keccak256("DECREMENT_ROLE");
     bytes32 constant public ASSIGN_TASK_ROLE = keccak256("ASSIGN_TASK_ROLE");
 
     string private constant ERROR_ASSIGNED_TASK = "TASK_ALREADY_ASSIGNED";
@@ -76,25 +72,5 @@ contract TasksApp is AragonApp {
         taskRegistry[_languageGroup][_userId] = _taskId;
         tasks[_taskId].status = Status.Assigned;
         emit TaskAssigned(_languageGroup, _userId, _taskId);
-    }
-
-
-
-        /**
-     * @notice Increment the counter by `step`
-     * @param step Amount to increment by
-     */
-    function increment(uint256 step) external auth(INCREMENT_ROLE) {
-        value = value.add(step);
-        emit Increment(msg.sender, step);
-    }
-
-    /**
-     * @notice Decrement the counter by `step`
-     * @param step Amount to decrement by
-     */
-    function decrement(uint256 step) external auth(DECREMENT_ROLE) {
-        value = value.sub(step);
-        emit Decrement(msg.sender, step);
     }
 }
