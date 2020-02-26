@@ -21,7 +21,7 @@ function App() {
               ${textStyle('title2')}
             `}
           >
-            Tasks
+            Task Allocation
           </span>
         }
       />

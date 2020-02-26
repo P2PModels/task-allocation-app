@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { formatDistance } from 'date-fns'
 
 import {
+  Card,
   ContextMenu,
   ContextMenuItem,
   Text,
@@ -30,49 +31,22 @@ const TaskDetail = ({ latest, children }) => {
     </div>
   )
 }
-const Task = ({ userId, task, className, onAssignTask }) => {
+const TaskCard = ({ userId, task, className, onAssignTask }) => {
   const theme = useTheme()
 
-  const { video, type, language, assignee, created, completed } = task
+  // const { video, type, language, assignee, created, completed } = task
 
   return (
-    <TaskStyle className={className} theme={theme}>
-      <TaskContainer>
-        <TaskData>
-          <TaskMain>
-            <div>
-              <TaskTitle>{video.title}</TaskTitle>
-              {type && <Tag>{type}</Tag>}
-            </div>
-            {/* <Thumbnail>
-              <img src={video.thumbnail} />
-            </Thumbnail> */}
-          </TaskMain>
-          <TaskDetails>
-            <TaskDetail>
-              <IconClock css="margin-bottom: 4px;  margin-right: 4px" /> created{' '}
-              {dateDistance(created)}
-            </TaskDetail>
-            <TaskDetail>
-              <IconWrite css="margin-bottom: 4px;  margin-right: 4px" />
-              Translate to &nbsp;
-              {language}
-            </TaskDetail>
-            <TaskDetail>
-              Original language &nbsp;
-              {video.primary_audio_language_code}
-            </TaskDetail>
-          </TaskDetails>
-        </TaskData>
-        <TaskContextMenu
-          taskID={task.id}
-          targetLanguage={language}
-          onAssignTask={(idTask, language) =>
-            onAssignTask(userId, idTask, language)
-          }
-        />
-      </TaskContainer>
-    </TaskStyle>
+    <Card>
+      <Thumbnail src={''} />
+      <span
+        css={`
+          ${textStyle('body2')}
+        `}
+      >
+        Details
+      </span>
+    </Card>
   )
 }
 
@@ -168,4 +142,5 @@ const Thumbnail = styled.div`
     width: 50%;
   }
 `
-export default Task
+
+export default TaskCard
