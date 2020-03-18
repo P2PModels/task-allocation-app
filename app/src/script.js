@@ -4,19 +4,26 @@ import Aragon, { events } from '@aragon/api'
 
 const app = new Aragon()
 
-app.store(async (state, { event }) => {
+app.store(async (state, { event, returnValues }) => {
   let nextState = { ...state }
-
   // Initial state
   if (state == null) {
     nextState = {
-      tasks: [],
+      tasks: {},
     }
   }
 
   switch (event) {
     case 'TaskAssigned':
-      // nextState = {}
+      const { userId, taskId } = returnValues
+      const userTasks =
+        nextState.tasks && nextState.tasks[userId]
+          ? nextState.tasks[userId]
+          : []
+      nextState = {
+        ...nextState,
+        tasks: { ...nextState.tasks, [userId]: [...userTasks, taskId] },
+      }
       break
     case events.SYNC_STATUS_SYNCING:
       nextState = { ...nextState, isSyncing: true }

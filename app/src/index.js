@@ -3,9 +3,18 @@ import ReactDOM from 'react-dom'
 import { AragonApi } from '@aragon/api-react'
 import App from './App'
 
+/* 
+ {
+   tasks: {
+     <task_id>: {
+       assignnee: <userId>
+     }
+   }
+ }
+*/
 const reducer = state => {
   if (state === null) {
-    return { count: 0, isSyncing: true }
+    return { tasks: {}, isSyncing: true }
   }
   return state
 }

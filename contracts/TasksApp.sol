@@ -8,7 +8,7 @@ contract TasksApp is AragonApp {
     using SafeMath for uint256;
 
     /// Events
-    event TaskAssigned(bytes32 _languageGroup, string _userId, string _taskId);
+    event TaskAssigned(bytes32 languageGroup, string userId, string taskId);
 
     ///Types
 

@@ -5,9 +5,6 @@ import axios from 'axios'
 // import axios from '../lib/axios'
 
 import {
-  Inside,
-  Card,
-  Split,
   textStyle,
   useTheme,
   Box,
@@ -15,24 +12,16 @@ import {
   Bar,
 } from '@aragon/ui'
 
-import TaskCardGroup from '../components/Cards/TaskCardGroup'
-import Task from '../components/Cards/TaskCard'
-import MetamaskLogo from '../../assets/MetamaskLogo.jpg'
+import TaskCardGroup from '../../components/Cards/TaskCardGroup'
+import MetamaskLogo from '../../../assets/MetamaskLogo.jpg'
+import TaskCard from '../../components/Cards/TaskCard/TaskCard'
+import AssignedTasks from './AssignedTasks'
 
 import { utf8ToHex, fromAscii } from 'web3-utils'
 
-import { USER_API } from '../lib/amara-utils'
-import TaskCard from '../components/Cards/TaskCard'
+import { USER_API } from '../../lib/amara-utils'
 
-async function fetchTasks() {
-  const res = await axios.get('http://localhost:5000/', {
-    headers: {
-      ' X-Api-Key': 'a',
-    },
-  })
-  return res
-}
-const Tasks = ({ tasks }) => {
+const Tasks = ({ tasks, totalTasks }) => {
   const theme = useTheme()
   const { api, appState } = useAragonApi()
   const { isSyncing } = appState
@@ -46,27 +35,15 @@ const Tasks = ({ tasks }) => {
       `Assigning task ${idTask} which belongs to language group ${language} to the user ${userId}`
     )
     console.log(`Hex values: userId: ${utf8ToHex(userId)}`)
-    api.assignTask(utf8ToHex(language), userId, toString(idTask)).subscribe(
+    api.assignTask(utf8ToHex(language), userId, idTask.toString()).subscribe(
       res => console.log('success'),
       err => console.log(err)
     )
   }
 
-  useEffect(() => {
-    axios &&
-      fetchTasks().then(
-        res => {
-          console.log(res)
-          console.log('Reaching Amara api success')
-        },
-        err => {
-          console.error(`There has been a problem. 
-      ${err}`)
-        }
-      )
-  }, [isSyncing])
   return (
     <React.Fragment>
+      <AssignedTasks availableTasks={totalTasks} />
       <Bar
         primary={
           <span
@@ -105,8 +82,20 @@ const Tasks = ({ tasks }) => {
         `}
       >
         <TaskCardGroup>
-          {tasks && tasks.length > 0 && tasks.map((t, index) => <TaskCard />)}
+          {tasks &&
+            tasks.length > 0 &&
+            tasks.map((t, index) => (
+              <TaskCard
+                margin={index === 0}
+                key={t.id}
+                task={t}
+                onAssignTask={assignTaskHandler}
+              />
+            ))}
         </TaskCardGroup>
+        {tasks && tasks.length === 0 && (
+          <NoTaskMessage>There are not task pending for you.</NoTaskMessage>
+        )}
       </div>
     </React.Fragment>
   )
@@ -114,7 +103,13 @@ const Tasks = ({ tasks }) => {
 
 const MetamaskBox = ({ theme, description }) => {
   return (
-    <Box padding={5}>
+    <Box
+      css={`
+        background-color: #506f8b;
+        color: white;
+      `}
+      padding={5}
+    >
       <MetamaskCard>
         <Icon>
           <img
@@ -122,7 +117,7 @@ const MetamaskBox = ({ theme, description }) => {
             css={{ width: '150px', paddingRight: `${3 * GU}px` }}
           />
         </Icon>
-        <Description theme={theme}>{description}</Description>
+        <Description>{description}</Description>
         <Links>
           <ul>
             <li>
@@ -168,8 +163,8 @@ const Icon = styled.div`
 `
 
 const Description = styled.p`
-  color: ${({ theme }) => theme.contentSecondary};
   ${textStyle('body2')};
+  color: inherit;
   text-align: left;
   grid-area: description;
   display: -webkit-box;
@@ -188,5 +183,9 @@ const Links = styled.div`
 const CustomSplit = styled.div`
   display: flex;
   align-items: center;
+`
+
+const NoTaskMessage = styled.span`
+  font-weight: bold;
 `
 export default Tasks
