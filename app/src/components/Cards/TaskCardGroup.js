@@ -5,7 +5,7 @@ import { CardLayout, GU, useLayout } from '@aragon/ui'
 const TaskCardGroup = ({ children }) => {
   const { layoutName } = useLayout()
   const compactMode = layoutName === 'small'
-  const rowHeight = compactMode ? null : 500
+  const rowHeight = compactMode ? null : 530
 
   return (
     <section>

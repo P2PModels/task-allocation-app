@@ -2,16 +2,21 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { Box, Button } from '@aragon/ui'
+
 import Thumbnail from './Thumbnail'
 import Details from './Details'
 
-const TaskCard = ({ task, onAssignTask, margin }) => {
+import { USER_ID } from '../../../lib/amara-utils'
+
+const TaskCard = ({ task, onActionClick, margin, isAssigned }) => {
   const { video } = task
 
   return (
     <Box
+      padding={20}
       css={`
         ${margin ? 'margin-top: 16px;' : ''}
+        // ${isAssigned ? 'background-color: #f0f5f0' : ''}
       `}
     >
       <TaskMain>
@@ -22,9 +27,9 @@ const TaskCard = ({ task, onAssignTask, margin }) => {
             width: 100%;
             margin-top: 15px;
           `}
-          onClick={() => onAssignTask('userid', task.id, task.language)}
-          label="Translate"
-          mode="strong"
+          onClick={() => onActionClick(USER_ID, task.id, task.language)}
+          label={isAssigned ? 'Translate' : 'Get Task'}
+          mode={isAssigned ? 'positive' : 'strong'}
         />
       </TaskMain>
     </Box>
@@ -37,7 +42,6 @@ const TaskMain = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  margin-bottom: 8px;
 `
 
 export default TaskCard

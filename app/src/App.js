@@ -4,7 +4,7 @@ import { Main, Header, textStyle } from '@aragon/ui'
 import styled from 'styled-components'
 import axios from 'axios'
 
-import Tasks from './screens/Tasks/Tasks'
+import Tasks from './screens/Tasks'
 
 // import apiTasks from './data'
 import { USER_API, USER_ID, USER_SUSBSCRIBED_GROUPS } from './lib/amara-utils'
@@ -36,7 +36,12 @@ async function fetchUserAvailableTasks(teams, userApi) {
   const availableTasks = []
   teamTasks.forEach(tasks =>
     availableTasks.push(
-      ...tasks.filter(task => !task.assignee || task.assignee === null)
+      ...tasks.filter(
+        task =>
+          !task.assignee ||
+          task.assignee === null ||
+          task.assignee.id === USER_ID
+      )
     )
   )
 
@@ -54,8 +59,7 @@ async function fetchUserAvailableTasks(teams, userApi) {
 
 function App() {
   const { appState } = useAragonApi()
-  const { tasks, isSyncing } = appState
-  const hasTasks = tasks['userid']
+  const { isSyncing } = appState
   // Hardcoded tasks
   /* const availableTasks =
     hasTasks &&
@@ -64,15 +68,13 @@ function App() {
     }) */
 
   const [availableTasks, setAvailableTasks] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const unassignedTasks = availableTasks.filter(({ id }) => {
-    return !tasks['userid'].includes(id.toString())
-  })
   useEffect(() => {
     axios &&
       fetchUserAvailableTasks(USER_SUSBSCRIBED_GROUPS, USER_API).then(
         tasks => {
-          console.log(tasks)
+          setIsLoading(false)
           setAvailableTasks(tasks)
         },
         err => {
@@ -94,7 +96,7 @@ function App() {
           </span>
         }
       />
-      <Tasks tasks={unassignedTasks} totalTasks={availableTasks} />
+      <Tasks tasks={availableTasks} isLoading={isLoading} userId={USER_ID} />
     </Main>
   )
 }

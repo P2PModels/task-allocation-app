@@ -43,6 +43,7 @@ contract TasksApp is AragonApp {
     bytes32 constant public ASSIGN_TASK_ROLE = keccak256("ASSIGN_TASK_ROLE");
 
     string private constant ERROR_ASSIGNED_TASK = "TASK_ALREADY_ASSIGNED";
+    string private constant ERROR_USER_HAS_TASK = "USER_HAS_TASK";
 
     function initialize() public onlyInit {
         initialized();
@@ -53,8 +54,14 @@ contract TasksApp is AragonApp {
         _;
     }
 
+    modifier userAlreadyHasTask(bytes32 _languageGroup, string _userId) {
+        bytes memory str = bytes(taskRegistry[_languageGroup][_userId]);
+        require(str.length == 0, ERROR_USER_HAS_TASK);
+        _;
+    }
+
     /**
-     * @notice Assign `_taskId` to the user `_userId` who belongs to the group `_languageGroup`.
+     * @notice Assignment of the translation task.
      * @param _taskId The task's id.
      * @param _languageGroup User's translation group
      * @param _userId The user's id.
@@ -67,10 +74,15 @@ contract TasksApp is AragonApp {
     )
     external
     taskAlreadyAssigned(_languageGroup, _userId, _taskId)
+    userAlreadyHasTask(_languageGroup, _userId)
     auth(ASSIGN_TASK_ROLE)
     {
         taskRegistry[_languageGroup][_userId] = _taskId;
         tasks[_taskId].status = Status.Assigned;
         emit TaskAssigned(_languageGroup, _userId, _taskId);
+    }
+
+    function getUserTask(bytes32 _languageGroup, string _userId) external view returns(string) {
+        return taskRegistry[_languageGroup][_userId];
     }
 }

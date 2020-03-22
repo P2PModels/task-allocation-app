@@ -30,6 +30,5 @@ const MainTag = styled.div`
   font-weight: bold;
   overflow: hidden;
   white-space: nowrap;
-
 `
 export default Tag
