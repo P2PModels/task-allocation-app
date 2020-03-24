@@ -31,7 +31,7 @@ async function fetchUserAvailableTasks(teams, userApi) {
   )
     .map(({ data }) => data.objects)
     .filter(tasks => tasks.length > 0)
-
+  console.log('Team tasks received...')
   // Filter available tasks
   const availableTasks = []
   teamTasks.forEach(tasks =>
@@ -44,7 +44,7 @@ async function fetchUserAvailableTasks(teams, userApi) {
       )
     )
   )
-
+  console.log('Available tasks filtered...')
   // Get task videos
   const fullAvailableTasks = await (
     await Promise.all(
@@ -53,7 +53,7 @@ async function fetchUserAvailableTasks(teams, userApi) {
   ).map(({ data }, index) => {
     return { ...availableTasks[index], video: data }
   })
-
+  console.log('Task videos received...')
   return fullAvailableTasks
 }
 

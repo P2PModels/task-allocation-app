@@ -1,40 +1,55 @@
 import React from 'react'
 import styled from 'styled-components'
-
+import { useDrag } from 'react-dnd'
 import { Box, Button } from '@aragon/ui'
 
 import Thumbnail from './Thumbnail'
 import Details from './Details'
 
 import { USER_ID } from '../../../lib/amara-utils'
+import { ItemTypes } from '../../../lib/dnd-utils'
 
-const TaskCard = ({ task, onActionClick, margin, isAssigned }) => {
+const TaskCard = React.forwardRef(({ task, onActionClick, isAssigned }, _) => {
   const { video } = task
 
+  const [{ isDragging }, drag] = useDrag({
+    item: { type: ItemTypes.TASK },
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+    end: (_, monitor) => {
+      monitor.didDrop() && onActionClick(USER_ID, task.id, task.language)
+    },
+  })
+
   return (
-    <Box
-      padding={20}
-      css={`
-        ${margin ? 'margin-top: 16px;' : ''}
+    <div ref={isAssigned ? null : drag}>
+      <Box
+        padding={20}
+        css={`
+        opacity: ${isDragging ? 0.5 : 1}
         // ${isAssigned ? 'background-color: #f0f5f0' : ''}
       `}
-    >
-      <TaskMain>
-        <Thumbnail video={!!video && video} targetLanguage={task.language} />
-        <Details task={task} />
-        <Button
-          css={`
-            width: 100%;
-            margin-top: 15px;
-          `}
-          onClick={() => onActionClick(USER_ID, task.id, task.language)}
-          label={isAssigned ? 'Translate' : 'Get Task'}
-          mode={isAssigned ? 'positive' : 'strong'}
-        />
-      </TaskMain>
-    </Box>
+      >
+        <TaskMain>
+          <Thumbnail video={!!video && video} targetLanguage={task.language} />
+          <Details task={task} />
+          {isAssigned && (
+            <Button
+              css={`
+                width: 100%;
+                margin-top: 15px;
+              `}
+              onClick={() => onActionClick(USER_ID, task.id, task.language)}
+              label="Translate"
+              mode="positive"
+            />
+          )}
+        </TaskMain>
+      </Box>
+    </div>
   )
-}
+})
 
 const TaskMain = styled.div`
   width: 100%;

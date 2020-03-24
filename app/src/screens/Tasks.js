@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react'
 import { useAragonApi } from '@aragon/api-react'
 import styled from 'styled-components'
+import { DndProvider } from 'react-dnd'
+import Backend from 'react-dnd-html5-backend'
 
 import {
   textStyle,
@@ -19,15 +21,18 @@ import {
 import TaskCardGroup from '../components/Cards/TaskCardGroup'
 import MetamaskLogo from '../../assets/MetamaskLogo.jpg'
 import TaskCard from '../components/Cards/TaskCard/TaskCard'
+import DropArea from '../components/DropArea'
 
 import { getEditorLink } from '../lib/amara-utils'
 import { utf8ToHex } from 'web3-utils'
 
-const Tasks = ({ tasks, isLoading, userId }) => {
+const Tasks = ({ tasks = [], isLoading, userId }) => {
   const theme = useTheme()
   const { api, appState } = useAragonApi()
   const { tasks: usersAssignedTasks, isSyncing } = appState
   const [opened, setOpened] = useState(false)
+  const [isDropping, setIsDropping] = useState(false)
+
   const userAssignedTasks =
     usersAssignedTasks && usersAssignedTasks[userId]
       ? usersAssignedTasks[userId]
@@ -38,6 +43,7 @@ const Tasks = ({ tasks, isLoading, userId }) => {
           return !userAssignedTasks.includes(id.toString())
         })
       : [...tasks]
+  const assignedTasksExists = !!tasks.length && !!userAssignedTasks.length
 
   const description = `These task are currently available for you. You have 12 hours to get
   them assigned. During this time, they'll be blocked to you. After
@@ -72,122 +78,125 @@ const Tasks = ({ tasks, isLoading, userId }) => {
     <ToastHub position="left">
       <Toast>
         {toast => (
-          <React.Fragment>
-            <CustomSplit>
-              <Box
-                css={`
-                  width: 90%;
-                  margin-right: 2%;
-                `}
-                padding={3 * GU}
-                heading={
-                  <div
+          <DndProvider backend={Backend}>
+            <React.Fragment>
+              <CustomSplit>
+                <Box
+                  css={`
+                    width: 90%;
+                    margin-right: 2%;
+                  `}
+                  padding={3 * GU}
+                  heading={
+                    <div
+                      css={`
+                        ${textStyle('body3')};
+                      `}
+                    >
+                      Description
+                    </div>
+                  }
+                >
+                  {description}
+                </Box>
+                <MetamaskBox theme={theme} description={metamaskDescription} />
+              </CustomSplit>
+              <Bar
+                primary={
+                  <span
                     css={`
-                      ${textStyle('body3')};
+                      ${textStyle('title4')}
                     `}
                   >
-                    Description
-                  </div>
+                    Assigned Tasks{' '}
+                    {!isLoading &&
+                      userAssignedTasks &&
+                      userAssignedTasks.length > 0 && (
+                        <span>({userAssignedTasks.length})</span>
+                      )}
+                  </span>
                 }
-              >
-                {description}
-              </Box>
-              <MetamaskBox theme={theme} description={metamaskDescription} />
-            </CustomSplit>
-            <Bar
-              primary={
-                <span
-                  css={`
-                    ${textStyle('title4')}
-                  `}
-                >
-                  Assigned Tasks{' '}
-                  {!isLoading &&
-                    userAssignedTasks &&
-                    userAssignedTasks.length > 0 && (
-                      <span>({userAssignedTasks.length})</span>
-                    )}
-                </span>
-              }
-            />
-            {userAssignedTasks && tasks && (
-              <TaskCardGroup>
-                {userAssignedTasks.map((t, index) => {
-                  const task = tasks.find(({ id }) => id.toString() === t)
-                  return task ? (
-                    <TaskCard
-                      key={task.id}
-                      margin={index === 0}
-                      task={task}
-                      onActionClick={() => {
-                        window.open(getEditorLink(task), '_blank')
-                      }}
-                      isAssigned
-                    />
-                  ) : null
-                })}
-              </TaskCardGroup>
-            )}
-            {userAssignedTasks &&
-              userAssignedTasks.length === 0 &&
-              !isLoading && (
-                <NoTaskMessage>You don't have any task assigned.</NoTaskMessage>
-              )}
-            <br />
-            <br />
-            <Bar
-              primary={
-                <span
-                  css={`
-                    ${textStyle('title4')}
-                  `}
-                >
-                  Available Task{' '}
-                  {!isLoading &&
-                    unassignedTasks &&
-                    unassignedTasks.length > 0 && (
-                      <span>({unassignedTasks.length})</span>
-                    )}
-                </span>
-              }
-            />
-            <div>
-              {(isLoading || isSyncing) && (
-                <FloatIndicator>
-                  <LoadingRing />
-                  Fetching tasks...
-                </FloatIndicator>
-              )}
-              {unassignedTasks && unassignedTasks.length > 0 && (
-                <TaskCardGroup>
-                  {unassignedTasks.map((t, index) => (
-                    <TaskCard
-                      margin={index === 0}
-                      key={t.id}
-                      task={t}
-                      onActionClick={(userId, idTask, language) =>
-                        assignTaskHandler(userId, idTask, language, toast)
-                      }
-                      actionLabel="Get Task"
-                    />
-                  ))}
-                </TaskCardGroup>
-              )}
-              {unassignedTasks &&
-                unassignedTasks.length === 0 &&
-                !isLoading && (
-                  <NoTaskMessage>
-                    There are no tasks pending for you.
-                  </NoTaskMessage>
+              />
+              <DropArea isEmpty={userAssignedTasks.length === 0}>
+                {assignedTasksExists && (
+                  <TaskCardGroup>
+                    {userAssignedTasks.map(t => {
+                      const task = tasks.find(({ id }) => id.toString() === t)
+                      return task ? (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          onActionClick={() => {
+                            window.open(getEditorLink(task), '_blank')
+                          }}
+                          isAssigned
+                        />
+                      ) : null
+                    })}
+                  </TaskCardGroup>
                 )}
-              <Modal visible={opened} onClose={close}>
-                <ModalContent>
-                  <CustomIconAttention /> You already have a translation task in
-                  that language.
-                </ModalContent>
-              </Modal>
-            </div>
-          </React.Fragment>
+                {userAssignedTasks &&
+                  userAssignedTasks.length === 0 &&
+                  !isLoading &&
+                  !isDropping && (
+                    <NoTaskMessage>
+                      You don't have any task assigned.
+                    </NoTaskMessage>
+                  )}
+              </DropArea>
+              <Bar
+                primary={
+                  <span
+                    css={`
+                      ${textStyle('title4')}
+                    `}
+                  >
+                    Available Task{' '}
+                    {!isLoading &&
+                      unassignedTasks &&
+                      unassignedTasks.length > 0 && (
+                        <span>({unassignedTasks.length})</span>
+                      )}
+                  </span>
+                }
+              />
+              <div>
+                {(isLoading || isSyncing) && (
+                  <FloatIndicator>
+                    <LoadingRing />
+                    Fetching tasks...
+                  </FloatIndicator>
+                )}
+                {unassignedTasks && unassignedTasks.length > 0 && (
+                  <TaskCardGroup rowHeight={480}>
+                    {unassignedTasks.map(t => (
+                      <TaskCard
+                        key={t.id}
+                        task={t}
+                        onActionClick={(userId, idTask, language) =>
+                          assignTaskHandler(userId, idTask, language, toast)
+                        }
+                        actionLabel="Get Task"
+                      />
+                    ))}
+                  </TaskCardGroup>
+                )}
+                {unassignedTasks &&
+                  unassignedTasks.length === 0 &&
+                  !isLoading && (
+                    <NoTaskMessage>
+                      There are no tasks pending for you.
+                    </NoTaskMessage>
+                  )}
+                <Modal visible={opened} onClose={close}>
+                  <ModalContent>
+                    <CustomIconAttention /> You already have a translation task
+                    in that language.
+                  </ModalContent>
+                </Modal>
+              </div>
+            </React.Fragment>
+          </DndProvider>
         )}
       </Toast>
     </ToastHub>
@@ -238,7 +247,6 @@ const MetamaskCard = styled.section`
   overflow: hidden;
   height: 100%;
   width: 100%;
-  white-space: initial;
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -277,10 +285,11 @@ const CustomSplit = styled.div`
   margin-bottom: 2%;
 `
 
-const NoTaskMessage = styled.span`
+const NoTaskMessage = styled.div`
+  display: flex;
+  align-items: center;
   color: grey;
   margin-left: 2%;
-  margin-bottom: 2%;
 `
 
 const ModalContent = styled.div`
@@ -293,4 +302,5 @@ const CustomIconAttention = styled(IconAttention)`
   height: 70px;
   margin-right: 1.5%;
 `
+
 export default Tasks

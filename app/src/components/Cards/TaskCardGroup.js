@@ -2,14 +2,20 @@ import React from 'react'
 
 import { CardLayout, GU, useLayout } from '@aragon/ui'
 
-const TaskCardGroup = ({ children }) => {
+const TaskCardGroup = ({
+  columnWidthMin = 34 * GU,
+  rowHeight = 530,
+  children,
+}) => {
   const { layoutName } = useLayout()
   const compactMode = layoutName === 'small'
-  const rowHeight = compactMode ? null : 530
 
   return (
     <section>
-      <CardLayout columnWidthMin={34 * GU} rowHeight={rowHeight}>
+      <CardLayout
+        columnWidthMin={columnWidthMin}
+        rowHeight={compactMode ? null : rowHeight}
+      >
         {children}
       </CardLayout>
     </section>
